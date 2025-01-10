@@ -19,7 +19,7 @@ export default function Dashboard() {
         <TicketStats />
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-card rounded-lg shadow-lg border p-6">
         <TicketFilters filters={filters} setFilters={setFilters} />
         <TicketList filters={filters} />
       </div>

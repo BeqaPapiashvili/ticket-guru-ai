@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const categories = [
   { id: "network", label: "ქსელური პრობლემა" },
@@ -27,6 +28,7 @@ const priorities = [
 
 export function TicketForm() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     category: "",
@@ -42,12 +44,27 @@ export function TicketForm() {
 
     try {
       // Here you would typically send the data to your backend
-      console.log("Submitting ticket:", formData);
+      const newTicket = {
+        id: `T-${Math.floor(Math.random() * 1000)}`,
+        title: formData.description.slice(0, 50) + "...",
+        user: formData.name,
+        email: formData.email,
+        status: "new" as const,
+        priority: formData.priority as "low" | "medium" | "high",
+        category: formData.category,
+        created_at: new Date().toISOString(),
+      };
+      
+      // In a real application, you would save this to a backend
+      console.log("New ticket:", newTicket);
       
       toast({
         title: "ტიკეტი წარმატებით გაიგზავნა",
         description: "ჩვენ მალე დაგიკავშირდებით",
       });
+
+      // Navigate to dashboard after successful submission
+      navigate("/dashboard");
 
       setFormData({
         category: "",

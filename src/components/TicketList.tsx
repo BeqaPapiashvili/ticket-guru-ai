@@ -1,4 +1,7 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CheckCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
@@ -8,7 +11,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const mockTickets = [
+export interface Ticket {
+  id: string;
+  title: string;
+  user: string;
+  email: string;
+  status: "new" | "in_progress" | "resolved" | "closed";
+  priority: "low" | "medium" | "high";
+  category: string;
+  created_at: string;
+  completed_at?: string;
+}
+
+const mockTickets: Ticket[] = [
   {
     id: "T-001",
     title: "ქსელური კავშირი დაკარგულია",
@@ -54,6 +69,44 @@ interface TicketListProps {
 }
 
 export function TicketList({ filters }: TicketListProps) {
+  const { toast } = useToast();
+  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
+
+  const handleComplete = (ticketId: string) => {
+    setTickets(prevTickets =>
+      prevTickets.map(ticket => {
+        if (ticket.id === ticketId) {
+          const completed_at = new Date().toISOString();
+          toast({
+            title: "ტიკეტი დასრულებულია",
+            description: `დასრულების დრო: ${new Date(completed_at).toLocaleString("ka-GE")}`,
+          });
+          return {
+            ...ticket,
+            status: "resolved" as const,
+            completed_at,
+          };
+        }
+        return ticket;
+      })
+    );
+  };
+
+  const filteredTickets = tickets.filter(ticket => {
+    if (filters.status && ticket.status !== filters.status) return false;
+    if (filters.category && ticket.category !== filters.category) return false;
+    if (filters.priority && ticket.priority !== filters.priority) return false;
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      return (
+        ticket.title.toLowerCase().includes(searchLower) ||
+        ticket.user.toLowerCase().includes(searchLower) ||
+        ticket.email.toLowerCase().includes(searchLower)
+      );
+    }
+    return true;
+  });
+
   return (
     <Table>
       <TableHeader>
@@ -64,21 +117,22 @@ export function TicketList({ filters }: TicketListProps) {
           <TableHead>სტატუსი</TableHead>
           <TableHead>პრიორიტეტი</TableHead>
           <TableHead>თარიღი</TableHead>
+          <TableHead>მოქმედება</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {mockTickets.map((ticket) => (
-          <TableRow key={ticket.id}>
-            <TableCell>{ticket.id}</TableCell>
+        {filteredTickets.map((ticket) => (
+          <TableRow key={ticket.id} className="hover:bg-muted/50">
+            <TableCell className="font-medium">{ticket.id}</TableCell>
             <TableCell>{ticket.title}</TableCell>
             <TableCell>
               <div>{ticket.user}</div>
-              <div className="text-sm text-gray-500">{ticket.email}</div>
+              <div className="text-sm text-muted-foreground">{ticket.email}</div>
             </TableCell>
             <TableCell>
               <Badge
                 className={`${
-                  statusColors[ticket.status as keyof typeof statusColors]
+                  statusColors[ticket.status]
                 } text-white`}
               >
                 {ticket.status === "new"
@@ -93,7 +147,7 @@ export function TicketList({ filters }: TicketListProps) {
             <TableCell>
               <Badge
                 className={`${
-                  priorityColors[ticket.priority as keyof typeof priorityColors]
+                  priorityColors[ticket.priority]
                 } text-white`}
               >
                 {ticket.priority === "low"
@@ -104,7 +158,25 @@ export function TicketList({ filters }: TicketListProps) {
               </Badge>
             </TableCell>
             <TableCell>
-              {new Date(ticket.created_at).toLocaleString("ka-GE")}
+              <div>{new Date(ticket.created_at).toLocaleString("ka-GE")}</div>
+              {ticket.completed_at && (
+                <div className="text-sm text-muted-foreground">
+                  დასრულდა: {new Date(ticket.completed_at).toLocaleString("ka-GE")}
+                </div>
+              )}
+            </TableCell>
+            <TableCell>
+              {ticket.status !== "resolved" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleComplete(ticket.id)}
+                  className="gap-2"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  შესრულებულია
+                </Button>
+              )}
             </TableCell>
           </TableRow>
         ))}
