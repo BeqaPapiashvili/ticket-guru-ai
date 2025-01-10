@@ -43,7 +43,8 @@ export function TicketForm() {
     try {
       const newTicket = {
         id: `T-${Math.floor(Math.random() * 1000)}`,
-        title: formData.description.slice(0, 50) + "...",
+        title: formData.description.slice(0, 50) + (formData.description.length > 50 ? "..." : ""),
+        description: formData.description,
         user: formData.name,
         email: formData.email,
         status: "new" as const,

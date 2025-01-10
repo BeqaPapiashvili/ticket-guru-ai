@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -22,6 +22,7 @@ export interface Ticket {
   category: string;
   created_at: string;
   completed_at?: string;
+  description?: string;
 }
 
 const statusColors = {
@@ -49,6 +50,7 @@ interface TicketListProps {
 export function TicketList({ filters }: TicketListProps) {
   const { toast } = useToast();
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [expandedTickets, setExpandedTickets] = useState<string[]>([]);
 
   // Load tickets from localStorage on component mount
   useEffect(() => {
@@ -75,6 +77,14 @@ export function TicketList({ filters }: TicketListProps) {
     
     setTickets(updatedTickets);
     localStorage.setItem("tickets", JSON.stringify(updatedTickets));
+  };
+
+  const toggleDescription = (ticketId: string) => {
+    setExpandedTickets(prev => 
+      prev.includes(ticketId)
+        ? prev.filter(id => id !== ticketId)
+        : [...prev, ticketId]
+    );
   };
 
   const filteredTickets = tickets.filter(ticket => {
@@ -109,17 +119,42 @@ export function TicketList({ filters }: TicketListProps) {
         {filteredTickets.map((ticket) => (
           <TableRow key={ticket.id} className="hover:bg-muted/50">
             <TableCell className="font-medium">{ticket.id}</TableCell>
-            <TableCell>{ticket.title}</TableCell>
+            <TableCell>
+              <div className="space-y-2">
+                <div>{ticket.title}</div>
+                {ticket.description && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleDescription(ticket.id)}
+                    className="flex items-center gap-2 text-sm text-muted-foreground"
+                  >
+                    {expandedTickets.includes(ticket.id) ? (
+                      <>
+                        <ChevronUp className="h-4 w-4" />
+                        დამალვა
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-4 w-4" />
+                        მეტის ნახვა
+                      </>
+                    )}
+                  </Button>
+                )}
+                {expandedTickets.includes(ticket.id) && ticket.description && (
+                  <div className="text-sm text-muted-foreground mt-2 bg-muted p-3 rounded-md">
+                    {ticket.description}
+                  </div>
+                )}
+              </div>
+            </TableCell>
             <TableCell>
               <div>{ticket.user}</div>
               <div className="text-sm text-muted-foreground">{ticket.email}</div>
             </TableCell>
             <TableCell>
-              <Badge
-                className={`${
-                  statusColors[ticket.status]
-                } text-white`}
-              >
+              <Badge className={`${statusColors[ticket.status]} text-white`}>
                 {ticket.status === "new"
                   ? "ახალი"
                   : ticket.status === "in_progress"
@@ -130,11 +165,7 @@ export function TicketList({ filters }: TicketListProps) {
               </Badge>
             </TableCell>
             <TableCell>
-              <Badge
-                className={`${
-                  priorityColors[ticket.priority]
-                } text-white`}
-              >
+              <Badge className={`${priorityColors[ticket.priority]} text-white`}>
                 {ticket.priority === "low"
                   ? "დაბალი"
                   : ticket.priority === "medium"
