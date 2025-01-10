@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
@@ -24,29 +24,6 @@ export interface Ticket {
   completed_at?: string;
 }
 
-const mockTickets: Ticket[] = [
-  {
-    id: "T-001",
-    title: "ქსელური კავშირი დაკარგულია",
-    user: "გიორგი მაისურაძე",
-    email: "giorgi@example.com",
-    status: "new",
-    priority: "high",
-    category: "network",
-    created_at: "2024-01-10T10:00:00",
-  },
-  {
-    id: "T-002",
-    title: "პროგრამა არ იხსნება",
-    user: "ანა კვარაცხელია",
-    email: "ana@example.com",
-    status: "in_progress",
-    priority: "medium",
-    category: "software",
-    created_at: "2024-01-10T09:30:00",
-  },
-];
-
 const statusColors = {
   new: "bg-blue-500",
   in_progress: "bg-yellow-500",
@@ -71,26 +48,33 @@ interface TicketListProps {
 
 export function TicketList({ filters }: TicketListProps) {
   const { toast } = useToast();
-  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+
+  // Load tickets from localStorage on component mount
+  useEffect(() => {
+    const storedTickets = JSON.parse(localStorage.getItem("tickets") || "[]");
+    setTickets(storedTickets);
+  }, []);
 
   const handleComplete = (ticketId: string) => {
-    setTickets(prevTickets =>
-      prevTickets.map(ticket => {
-        if (ticket.id === ticketId) {
-          const completed_at = new Date().toISOString();
-          toast({
-            title: "ტიკეტი დასრულებულია",
-            description: `დასრულების დრო: ${new Date(completed_at).toLocaleString("ka-GE")}`,
-          });
-          return {
-            ...ticket,
-            status: "resolved" as const,
-            completed_at,
-          };
-        }
-        return ticket;
-      })
-    );
+    const updatedTickets = tickets.map(ticket => {
+      if (ticket.id === ticketId) {
+        const completed_at = new Date().toISOString();
+        toast({
+          title: "ტიკეტი დასრულებულია",
+          description: `დასრულების დრო: ${new Date(completed_at).toLocaleString("ka-GE")}`,
+        });
+        return {
+          ...ticket,
+          status: "resolved" as const,
+          completed_at,
+        };
+      }
+      return ticket;
+    });
+    
+    setTickets(updatedTickets);
+    localStorage.setItem("tickets", JSON.stringify(updatedTickets));
   };
 
   const filteredTickets = tickets.filter(ticket => {
