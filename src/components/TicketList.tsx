@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle, ChevronDown, ChevronUp, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -51,12 +51,39 @@ export function TicketList({ filters }: TicketListProps) {
   const { toast } = useToast();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [expandedTickets, setExpandedTickets] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load tickets from localStorage on component mount
   useEffect(() => {
     const storedTickets = JSON.parse(localStorage.getItem("tickets") || "[]");
     setTickets(storedTickets);
   }, []);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
+          const uploadedTickets = JSON.parse(content);
+          setTickets(uploadedTickets);
+          localStorage.setItem("tickets", JSON.stringify(uploadedTickets));
+          toast({
+            title: "ტიკეტები წარმატებით აიტვირთა",
+            description: `${uploadedTickets.length} ტიკეტი დაემატა სისტემაში`,
+          });
+        } catch (error) {
+          toast({
+            title: "შეცდომა ფაილის ატვირთვისას",
+            description: "გთხოვთ აირჩიოთ სწორი JSON ფაილი",
+            variant: "destructive",
+          });
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
 
   const handleComplete = (ticketId: string) => {
     const updatedTickets = tickets.map(ticket => {
@@ -103,7 +130,26 @@ export function TicketList({ filters }: TicketListProps) {
   });
 
   return (
-    <Table>
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileUpload}
+          accept=".json"
+          className="hidden"
+        />
+        <Button
+          variant="outline"
+          onClick={() => fileInputRef.current?.click()}
+          className="gap-2"
+        >
+          <Upload className="h-4 w-4" />
+          ტიკეტების ატვირთვა
+        </Button>
+      </div>
+      
+      <Table>
       <TableHeader>
         <TableRow>
           <TableHead>ID</TableHead>
@@ -197,6 +243,7 @@ export function TicketList({ filters }: TicketListProps) {
           </TableRow>
         ))}
       </TableBody>
-    </Table>
+      </Table>
+    </div>
   );
 }

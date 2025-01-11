@@ -55,13 +55,23 @@ export function TicketForm() {
       
       // Store the ticket in localStorage
       const existingTickets = JSON.parse(localStorage.getItem("tickets") || "[]");
-      localStorage.setItem("tickets", JSON.stringify([...existingTickets, newTicket]));
+      const updatedTickets = [...existingTickets, newTicket];
+      localStorage.setItem("tickets", JSON.stringify(updatedTickets));
       
-      console.log("New ticket:", newTicket);
+      // Create and download JSON file
+      const blob = new Blob([JSON.stringify(updatedTickets, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'tickets.json';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
       
       toast({
         title: "ტიკეტი წარმატებით გაიგზავნა",
-        description: "ჩვენ მალე დაგიკავშირდებით",
+        description: "ტიკეტების ფაილი შენახულია თქვენს კომპიუტერში",
       });
 
       // Reset form after successful submission
@@ -165,4 +175,4 @@ export function TicketForm() {
       </Button>
     </form>
   );
-}
+};
