@@ -34,6 +34,7 @@ export function TicketForm() {
     description: "",
     name: "",
     email: "",
+    phone: "", // Added phone field
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,6 +48,7 @@ export function TicketForm() {
         description: formData.description,
         user: formData.name,
         email: formData.email,
+        phone: formData.phone, // Added phone to ticket data
         status: "new" as const,
         priority: formData.priority as "low" | "medium" | "high",
         category: formData.category,
@@ -70,6 +72,7 @@ export function TicketForm() {
         description: "",
         name: "",
         email: "",
+        phone: "", // Reset phone field
       });
     } catch (error) {
       toast({
@@ -155,6 +158,16 @@ export function TicketForm() {
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             placeholder="თქვენი ელ-ფოსტა"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">ტელეფონის ნომერი</label>
+          <Input
+            type="tel"
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            placeholder="თქვენი ტელეფონის ნომერი"
           />
         </div>
       </div>
