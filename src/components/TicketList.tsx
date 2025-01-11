@@ -1,8 +1,4 @@
-import { useState, useEffect, useRef } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { CheckCircle, ChevronDown, ChevronUp, Upload } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -11,32 +7,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export interface Ticket {
   id: string;
   title: string;
+  description: string;
   user: string;
-  email: string;
+  phone: string;
   status: "new" | "in_progress" | "resolved" | "closed";
   priority: "low" | "medium" | "high";
   category: string;
   created_at: string;
   completed_at?: string;
-  description?: string;
 }
-
-const statusColors = {
-  new: "bg-blue-500",
-  in_progress: "bg-yellow-500",
-  resolved: "bg-green-500",
-  closed: "bg-gray-500",
-};
-
-const priorityColors = {
-  low: "bg-gray-500",
-  medium: "bg-yellow-500",
-  high: "bg-red-500",
-};
 
 interface TicketListProps {
   filters: {
@@ -47,203 +32,142 @@ interface TicketListProps {
   };
 }
 
+const statusLabels: { [key: string]: string } = {
+  new: "ახალი",
+  in_progress: "მიმდინარე",
+  resolved: "გადაჭრილი",
+  closed: "დახურული",
+};
+
+const priorityColors: { [key: string]: string } = {
+  low: "bg-blue-500",
+  medium: "bg-yellow-500",
+  high: "bg-red-500",
+};
+
 export function TicketList({ filters }: TicketListProps) {
-  const { toast } = useToast();
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [expandedTickets, setExpandedTickets] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load tickets from localStorage on component mount
   useEffect(() => {
-    const storedTickets = JSON.parse(localStorage.getItem("tickets") || "[]");
-    setTickets(storedTickets);
-  }, []);
+    const loadTickets = () => {
+      const storedTickets = JSON.parse(localStorage.getItem("tickets") || "[]");
+      let filteredTickets = [...storedTickets];
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const content = e.target?.result as string;
-          const uploadedTickets = JSON.parse(content);
-          setTickets(uploadedTickets);
-          localStorage.setItem("tickets", JSON.stringify(uploadedTickets));
-          toast({
-            title: "ტიკეტები წარმატებით აიტვირთა",
-            description: `${uploadedTickets.length} ტიკეტი დაემატა სისტემაში`,
-          });
-        } catch (error) {
-          toast({
-            title: "შეცდომა ფაილის ატვირთვისას",
-            description: "გთხოვთ აირჩიოთ სწორი JSON ფაილი",
-            variant: "destructive",
-          });
-        }
-      };
-      reader.readAsText(file);
-    }
-  };
+      if (filters.status) {
+        filteredTickets = filteredTickets.filter(
+          (ticket) => ticket.status === filters.status
+        );
+      }
 
-  const handleComplete = (ticketId: string) => {
-    const updatedTickets = tickets.map(ticket => {
+      if (filters.category) {
+        filteredTickets = filteredTickets.filter(
+          (ticket) => ticket.category === filters.category
+        );
+      }
+
+      if (filters.priority) {
+        filteredTickets = filteredTickets.filter(
+          (ticket) => ticket.priority === filters.priority
+        );
+      }
+
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        filteredTickets = filteredTickets.filter(
+          (ticket) =>
+            ticket.title.toLowerCase().includes(searchLower) ||
+            ticket.description.toLowerCase().includes(searchLower) ||
+            ticket.user.toLowerCase().includes(searchLower)
+        );
+      }
+
+      setTickets(filteredTickets);
+    };
+
+    loadTickets();
+    const interval = setInterval(loadTickets, 5000);
+    return () => clearInterval(interval);
+  }, [filters]);
+
+  const handleStatusChange = (ticketId: string, newStatus: Ticket["status"]) => {
+    const updatedTickets = tickets.map((ticket) => {
       if (ticket.id === ticketId) {
-        const completed_at = new Date().toISOString();
-        toast({
-          title: "ტიკეტი დასრულებულია",
-          description: `დასრულების დრო: ${new Date(completed_at).toLocaleString("ka-GE")}`,
-        });
         return {
           ...ticket,
-          status: "resolved" as const,
-          completed_at,
+          status: newStatus,
+          completed_at:
+            newStatus === "resolved" ? new Date().toISOString() : undefined,
         };
       }
       return ticket;
     });
-    
-    setTickets(updatedTickets);
+
     localStorage.setItem("tickets", JSON.stringify(updatedTickets));
+    setTickets(updatedTickets);
   };
-
-  const toggleDescription = (ticketId: string) => {
-    setExpandedTickets(prev => 
-      prev.includes(ticketId)
-        ? prev.filter(id => id !== ticketId)
-        : [...prev, ticketId]
-    );
-  };
-
-  const filteredTickets = tickets.filter(ticket => {
-    if (filters.status && ticket.status !== filters.status) return false;
-    if (filters.category && ticket.category !== filters.category) return false;
-    if (filters.priority && ticket.priority !== filters.priority) return false;
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      return (
-        ticket.title.toLowerCase().includes(searchLower) ||
-        ticket.user.toLowerCase().includes(searchLower) ||
-        ticket.email.toLowerCase().includes(searchLower)
-      );
-    }
-    return true;
-  });
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileUpload}
-          accept=".json"
-          className="hidden"
-        />
-        <Button
-          variant="outline"
-          onClick={() => fileInputRef.current?.click()}
-          className="gap-2"
-        >
-          <Upload className="h-4 w-4" />
-          ტიკეტების ატვირთვა
-        </Button>
-      </div>
-      
-      <Table>
+    <Table>
       <TableHeader>
         <TableRow>
           <TableHead>ID</TableHead>
           <TableHead>სათაური</TableHead>
           <TableHead>მომხმარებელი</TableHead>
+          <TableHead>ტელეფონი</TableHead>
           <TableHead>სტატუსი</TableHead>
           <TableHead>პრიორიტეტი</TableHead>
-          <TableHead>თარიღი</TableHead>
+          <TableHead>კატეგორია</TableHead>
           <TableHead>მოქმედება</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {filteredTickets.map((ticket) => (
-          <TableRow key={ticket.id} className="hover:bg-muted/50">
-            <TableCell className="font-medium">{ticket.id}</TableCell>
+        {tickets.map((ticket) => (
+          <TableRow key={ticket.id}>
+            <TableCell>{ticket.id}</TableCell>
+            <TableCell>{ticket.title}</TableCell>
+            <TableCell>{ticket.user}</TableCell>
+            <TableCell>{ticket.phone}</TableCell>
             <TableCell>
-              <div className="space-y-2">
-                <div>{ticket.title}</div>
-                {ticket.description && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleDescription(ticket.id)}
-                    className="flex items-center gap-2 text-sm text-muted-foreground"
-                  >
-                    {expandedTickets.includes(ticket.id) ? (
-                      <>
-                        <ChevronUp className="h-4 w-4" />
-                        დამალვა
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="h-4 w-4" />
-                        მეტის ნახვა
-                      </>
-                    )}
-                  </Button>
-                )}
-                {expandedTickets.includes(ticket.id) && ticket.description && (
-                  <div className="text-sm text-muted-foreground mt-2 bg-muted p-3 rounded-md">
-                    {ticket.description}
-                  </div>
-                )}
-              </div>
+              <Badge>{statusLabels[ticket.status]}</Badge>
             </TableCell>
             <TableCell>
-              <div>{ticket.user}</div>
-              <div className="text-sm text-muted-foreground">{ticket.email}</div>
-            </TableCell>
-            <TableCell>
-              <Badge className={`${statusColors[ticket.status]} text-white`}>
-                {ticket.status === "new"
-                  ? "ახალი"
-                  : ticket.status === "in_progress"
-                  ? "მიმდინარე"
-                  : ticket.status === "resolved"
-                  ? "გადაჭრილი"
-                  : "დახურული"}
+              <Badge className={priorityColors[ticket.priority]}>
+                {ticket.priority}
               </Badge>
             </TableCell>
+            <TableCell>{ticket.category}</TableCell>
             <TableCell>
-              <Badge className={`${priorityColors[ticket.priority]} text-white`}>
-                {ticket.priority === "low"
-                  ? "დაბალი"
-                  : ticket.priority === "medium"
-                  ? "საშუალო"
-                  : "მაღალი"}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <div>{new Date(ticket.created_at).toLocaleString("ka-GE")}</div>
-              {ticket.completed_at && (
-                <div className="text-sm text-muted-foreground">
-                  დასრულდა: {new Date(ticket.completed_at).toLocaleString("ka-GE")}
-                </div>
-              )}
-            </TableCell>
-            <TableCell>
-              {ticket.status !== "resolved" && (
+              {ticket.status === "new" && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleComplete(ticket.id)}
-                  className="gap-2"
+                  onClick={() => handleStatusChange(ticket.id, "in_progress")}
                 >
-                  <CheckCircle className="h-4 w-4" />
-                  შესრულებულია
+                  დაწყება
+                </Button>
+              )}
+              {ticket.status === "in_progress" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleStatusChange(ticket.id, "resolved")}
+                >
+                  გადაჭრა
+                </Button>
+              )}
+              {ticket.status === "resolved" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleStatusChange(ticket.id, "closed")}
+                >
+                  დახურვა
                 </Button>
               )}
             </TableCell>
           </TableRow>
         ))}
       </TableBody>
-      </Table>
-    </div>
+    </Table>
   );
 }

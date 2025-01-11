@@ -33,8 +33,7 @@ export function TicketForm() {
     priority: "",
     description: "",
     name: "",
-    email: "",
-    phone: "", // Added phone field
+    phone: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,15 +46,13 @@ export function TicketForm() {
         title: formData.description.slice(0, 50) + (formData.description.length > 50 ? "..." : ""),
         description: formData.description,
         user: formData.name,
-        email: formData.email,
-        phone: formData.phone, // Added phone to ticket data
+        phone: formData.phone,
         status: "new" as const,
         priority: formData.priority as "low" | "medium" | "high",
         category: formData.category,
         created_at: new Date().toISOString(),
       };
       
-      // Store the ticket in localStorage
       const existingTickets = JSON.parse(localStorage.getItem("tickets") || "[]");
       const updatedTickets = [...existingTickets, newTicket];
       localStorage.setItem("tickets", JSON.stringify(updatedTickets));
@@ -65,14 +62,12 @@ export function TicketForm() {
         description: "ტიკეტი დამატებულია სისტემაში",
       });
 
-      // Reset form after successful submission
       setFormData({
         category: "",
         priority: "",
         description: "",
         name: "",
-        email: "",
-        phone: "", // Reset phone field
+        phone: "",
       });
     } catch (error) {
       toast({
@@ -148,16 +143,6 @@ export function TicketForm() {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="თქვენი სახელი"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium">ელ-ფოსტა</label>
-          <Input
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            placeholder="თქვენი ელ-ფოსტა"
           />
         </div>
 
