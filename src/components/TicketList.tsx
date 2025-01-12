@@ -81,6 +81,11 @@ export function TicketList({ filters }: TicketListProps) {
         );
       }
 
+      // Sort tickets by creation date (newest first)
+      filteredTickets.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
       setTickets(filteredTickets as Ticket[]);
     };
 
