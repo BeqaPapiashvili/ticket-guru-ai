@@ -6,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Search, Filter, Tag, AlertTriangle } from "lucide-react";
 
 interface TicketFiltersProps {
   filters: {
@@ -19,15 +20,19 @@ interface TicketFiltersProps {
 
 export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div>
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div className="space-y-2">
+        <label className="text-sm font-medium flex items-center gap-2">
+          <Filter className="h-4 w-4" />
+          სტატუსი
+        </label>
         <Select
           value={filters.status}
           onValueChange={(value) =>
             setFilters({ ...filters, status: value })
           }
         >
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="სტატუსი" />
           </SelectTrigger>
           <SelectContent>
@@ -39,14 +44,18 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
         </Select>
       </div>
 
-      <div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium flex items-center gap-2">
+          <Tag className="h-4 w-4" />
+          კატეგორია
+        </label>
         <Select
           value={filters.category}
           onValueChange={(value) =>
             setFilters({ ...filters, category: value })
           }
         >
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="კატეგორია" />
           </SelectTrigger>
           <SelectContent>
@@ -58,14 +67,18 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
         </Select>
       </div>
 
-      <div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4" />
+          პრიორიტეტი
+        </label>
         <Select
           value={filters.priority}
           onValueChange={(value) =>
             setFilters({ ...filters, priority: value })
           }
         >
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="პრიორიტეტი" />
           </SelectTrigger>
           <SelectContent>
@@ -76,13 +89,18 @@ export function TicketFilters({ filters, setFilters }: TicketFiltersProps) {
         </Select>
       </div>
 
-      <div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium flex items-center gap-2">
+          <Search className="h-4 w-4" />
+          ძიება
+        </label>
         <Input
           placeholder="ძიება..."
           value={filters.search}
           onChange={(e) =>
             setFilters({ ...filters, search: e.target.value })
           }
+          className="w-full"
         />
       </div>
     </div>

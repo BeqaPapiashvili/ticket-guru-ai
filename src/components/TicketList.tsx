@@ -112,49 +112,56 @@ export function TicketList({ filters }: TicketListProps) {
   };
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>ID</TableHead>
-          <TableHead>სათაური</TableHead>
-          <TableHead>მომხმარებელი</TableHead>
-          <TableHead>ტელეფონი</TableHead>
-          <TableHead>სტატუსი</TableHead>
-          <TableHead>პრიორიტეტი</TableHead>
-          <TableHead>კატეგორია</TableHead>
-          <TableHead>მოქმედება</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {tickets.map((ticket) => (
-          <TableRow key={ticket.id}>
-            <TableCell>{ticket.id}</TableCell>
-            <TableCell>{ticket.title}</TableCell>
-            <TableCell>{ticket.user}</TableCell>
-            <TableCell>{ticket.phone}</TableCell>
-            <TableCell>
-              <Badge>{statusLabels[ticket.status]}</Badge>
-            </TableCell>
-            <TableCell>
-              <Badge className={priorityColors[ticket.priority]}>
-                {ticket.priority}
-              </Badge>
-            </TableCell>
-            <TableCell>{ticket.category}</TableCell>
-            <TableCell>
-              {ticket.status !== "resolved" && ticket.status !== "closed" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleStatusChange(ticket.id)}
-                >
-                  შესრულებულია
-                </Button>
-              )}
-            </TableCell>
+    <div className="rounded-lg border">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-muted/50">
+            <TableHead className="font-semibold">ID</TableHead>
+            <TableHead className="font-semibold">სათაური</TableHead>
+            <TableHead className="font-semibold">მომხმარებელი</TableHead>
+            <TableHead className="font-semibold">ტელეფონი</TableHead>
+            <TableHead className="font-semibold">სტატუსი</TableHead>
+            <TableHead className="font-semibold">პრიორიტეტი</TableHead>
+            <TableHead className="font-semibold">კატეგორია</TableHead>
+            <TableHead className="font-semibold">მოქმედება</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {tickets.map((ticket) => (
+            <TableRow key={ticket.id} className="hover:bg-muted/50 transition-colors">
+              <TableCell className="font-medium">{ticket.id}</TableCell>
+              <TableCell>{ticket.title}</TableCell>
+              <TableCell>{ticket.user}</TableCell>
+              <TableCell>{ticket.phone}</TableCell>
+              <TableCell>
+                <Badge variant="outline" className="font-medium">
+                  {statusLabels[ticket.status]}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Badge 
+                  className={`${priorityColors[ticket.priority]} text-white font-medium`}
+                >
+                  {ticket.priority}
+                </Badge>
+              </TableCell>
+              <TableCell>{ticket.category}</TableCell>
+              <TableCell>
+                {ticket.status !== "resolved" && ticket.status !== "closed" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="hover:bg-primary/10 hover:text-primary transition-colors"
+                    onClick={() => handleStatusChange(ticket.id)}
+                  >
+                    შესრულებულია
+                  </Button>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
