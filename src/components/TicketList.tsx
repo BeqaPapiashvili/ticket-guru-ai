@@ -89,14 +89,13 @@ export function TicketList({ filters }: TicketListProps) {
     return () => clearInterval(interval);
   }, [filters]);
 
-  const handleStatusChange = (ticketId: string, newStatus: Ticket["status"]) => {
+  const handleStatusChange = (ticketId: string) => {
     const updatedTickets = tickets.map((ticket) => {
       if (ticket.id === ticketId) {
         return {
           ...ticket,
-          status: newStatus,
-          completed_at:
-            newStatus === "resolved" ? new Date().toISOString() : undefined,
+          status: "resolved",
+          completed_at: new Date().toISOString(),
         };
       }
       return ticket;
@@ -137,31 +136,13 @@ export function TicketList({ filters }: TicketListProps) {
             </TableCell>
             <TableCell>{ticket.category}</TableCell>
             <TableCell>
-              {ticket.status === "new" && (
+              {ticket.status !== "resolved" && ticket.status !== "closed" && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleStatusChange(ticket.id, "in_progress")}
+                  onClick={() => handleStatusChange(ticket.id)}
                 >
-                  დაწყება
-                </Button>
-              )}
-              {ticket.status === "in_progress" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleStatusChange(ticket.id, "resolved")}
-                >
-                  გადაჭრა
-                </Button>
-              )}
-              {ticket.status === "resolved" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleStatusChange(ticket.id, "closed")}
-                >
-                  დახურვა
+                  შესრულებულია
                 </Button>
               )}
             </TableCell>

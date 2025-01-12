@@ -5,7 +5,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis } from "recharts";
 import { useEffect, useState } from "react";
 import { Ticket } from "./TicketList";
 
@@ -36,10 +36,10 @@ export function TicketStats() {
       
       // აქტიური და გადაჭრილი ტიკეტების რაოდენობა
       const active = tickets.filter(t => t.status !== "resolved" && t.status !== "closed").length;
-      const resolved = tickets.filter(t => t.status === "resolved").length;
+      const resolved = tickets.filter(t => t.status === "resolved" || t.status === "closed").length;
       
       // საშუალო გადაჭრის დრო
-      const resolvedTicketsWithTime = tickets.filter(t => t.status === "resolved" && t.completed_at);
+      const resolvedTicketsWithTime = tickets.filter(t => (t.status === "resolved" || t.status === "closed") && t.completed_at);
       let totalResolutionTime = 0;
       
       resolvedTicketsWithTime.forEach(ticket => {
@@ -79,12 +79,8 @@ export function TicketStats() {
       setDailyStats(dailyData);
     };
 
-    // საწყისი გამოთვლა
     calculateStats();
-
-    // ყოველ 30 წამში განახლება
     const interval = setInterval(calculateStats, 30000);
-
     return () => clearInterval(interval);
   }, []);
 
