@@ -81,7 +81,7 @@ export function TicketList({ filters }: TicketListProps) {
         );
       }
 
-      setTickets(filteredTickets);
+      setTickets(filteredTickets as Ticket[]);
     };
 
     loadTickets();
@@ -92,11 +92,12 @@ export function TicketList({ filters }: TicketListProps) {
   const handleStatusChange = (ticketId: string) => {
     const updatedTickets = tickets.map((ticket) => {
       if (ticket.id === ticketId) {
-        return {
+        const updatedTicket: Ticket = {
           ...ticket,
-          status: "resolved",
+          status: "resolved" as const,
           completed_at: new Date().toISOString(),
         };
+        return updatedTicket;
       }
       return ticket;
     });
