@@ -88,36 +88,36 @@ export function TicketStats() {
   return (
     <>
       <Card className="bg-card hover:bg-card/80 transition-colors">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
           <CardTitle className="text-sm font-medium">აქტიური ტიკეტები</CardTitle>
           <AlertCircle className="h-4 w-4 text-primary" />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{activeTickets}</div>
+        <CardContent className="p-4 pt-0">
+          <div className="text-xl font-bold">{activeTickets}</div>
         </CardContent>
       </Card>
 
       <Card className="bg-card hover:bg-card/80 transition-colors">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
           <CardTitle className="text-sm font-medium">გადაჭრილი ტიკეტები</CardTitle>
           <CheckCircle2 className="h-4 w-4 text-primary" />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{resolvedTickets}</div>
+        <CardContent className="p-4 pt-0">
+          <div className="text-xl font-bold">{resolvedTickets}</div>
         </CardContent>
       </Card>
 
       <Card className="bg-card hover:bg-card/80 transition-colors">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
           <CardTitle className="text-sm font-medium">საშუალო გადაჭრის დრო</CardTitle>
           <Clock className="h-4 w-4 text-primary" />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{avgResolutionTime} სთ</div>
+        <CardContent className="p-4 pt-0">
+          <div className="text-xl font-bold">{avgResolutionTime} სთ</div>
         </CardContent>
       </Card>
 
-      <Card className="bg-card hover:bg-card/80 transition-colors">
+      <Card className="bg-card hover:bg-card/80 transition-colors col-span-full">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">ტიკეტების სტატისტიკა</CardTitle>
           <BarChart className="h-4 w-4 text-primary" />
