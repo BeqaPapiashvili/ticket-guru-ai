@@ -4,6 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { HelpCircle } from "lucide-react";
 
 const faqItems = [
   {
@@ -30,13 +31,28 @@ const faqItems = [
 
 export function FAQ() {
   return (
-    <Accordion type="single" collapsible className="w-full">
-      {faqItems.map((item, index) => (
-        <AccordionItem key={index} value={`item-${index}`}>
-          <AccordionTrigger>{item.question}</AccordionTrigger>
-          <AccordionContent>{item.answer}</AccordionContent>
-        </AccordionItem>
-      ))}
-    </Accordion>
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 text-primary">
+        <HelpCircle className="h-5 w-5" />
+        <h2 className="text-xl font-semibold">ხშირად დასმული კითხვები</h2>
+      </div>
+      
+      <Accordion type="single" collapsible className="w-full">
+        {faqItems.map((item, index) => (
+          <AccordionItem 
+            key={index} 
+            value={`item-${index}`}
+            className="border rounded-lg px-4 mb-2 hover:bg-accent/50 transition-colors"
+          >
+            <AccordionTrigger className="hover:no-underline">
+              {item.question}
+            </AccordionTrigger>
+            <AccordionContent className="text-muted-foreground">
+              {item.answer}
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
   );
 }

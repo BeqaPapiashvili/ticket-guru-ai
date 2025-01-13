@@ -10,13 +10,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2, Send, Network, Monitor, HardDrive, Key } from "lucide-react";
 
 const categories = [
-  { id: "network", label: "ქსელური პრობლემა" },
-  { id: "software", label: "პროგრამული უზრუნველყოფა" },
-  { id: "hardware", label: "აპარატურული პრობლემა" },
-  { id: "access", label: "წვდომის პრობლემა" },
-  { id: "other", label: "სხვა" },
+  { id: "network", label: "ქსელური პრობლემა", icon: Network },
+  { id: "software", label: "პროგრამული უზრუნველყოფა", icon: Monitor },
+  { id: "hardware", label: "აპარატურული პრობლემა", icon: HardDrive },
+  { id: "access", label: "წვდომის პრობლემა", icon: Key },
 ];
 
 const priorities = [
@@ -82,84 +82,82 @@ export function TicketForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <div>
+      <div className="grid gap-6">
+        <div className="space-y-2">
           <label className="text-sm font-medium">კატეგორია</label>
           <Select
-            value={formData.category}
-            onValueChange={(value) =>
-              setFormData({ ...formData, category: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="აირჩიეთ კატეგორია" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            value={formData
 
-        <div>
-          <label className="text-sm font-medium">პრიორიტეტი</label>
-          <Select
-            value={formData.priority}
-            onValueChange={(value) =>
-              setFormData({ ...formData, priority: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="აირჩიეთ პრიორიტეტი" />
-            </SelectTrigger>
-            <SelectContent>
-              {priorities.map((priority) => (
-                <SelectItem key={priority.id} value={priority.id}>
-                  {priority.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+მოდი გავაუმჯობესოთ ინდექს გვერდის ვიზუალური მხარე და განლაგება.
 
-        <div>
-          <label className="text-sm font-medium">პრობლემის აღწერა</label>
-          <Textarea
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            placeholder="აღწერეთ თქვენი პრობლემა დეტალურად"
-            className="h-32"
-          />
-        </div>
+<lov-code>
+Let's update the Index page layout and styling:
 
-        <div>
-          <label className="text-sm font-medium">სახელი</label>
-          <Input
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="თქვენი სახელი"
-          />
-        </div>
+<lov-write file_path="src/pages/Index.tsx">
+import { TicketForm } from "@/components/TicketForm";
+import { FAQ } from "@/components/FAQ";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { HelpCircle, Ticket, Sparkles } from "lucide-react";
 
-        <div>
-          <label className="text-sm font-medium">ტელეფონის ნომერი</label>
-          <Input
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            placeholder="თქვენი ტელეფონის ნომერი"
-          />
+const Index = () => {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Header Section */}
+          <div className="flex justify-between items-center">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                IT მხარდაჭერის სისტემა
+              </h1>
+              <p className="text-muted-foreground flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                შეავსეთ ფორმა ან გაეცანით ხშირად დასმულ კითხვებს
+              </p>
+            </div>
+            <ThemeToggle />
+          </div>
+
+          {/* Main Content */}
+          <div className="bg-card rounded-xl shadow-lg border transition-all hover:shadow-xl p-6">
+            <Tabs defaultValue="new-ticket" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2 h-14">
+                <TabsTrigger 
+                  value="new-ticket"
+                  className="data-[state=active]:bg-primary/10 transition-all flex items-center gap-2"
+                >
+                  <Ticket className="h-4 w-4" />
+                  ახალი ტიკეტი
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="faq"
+                  className="data-[state=active]:bg-primary/10 transition-all flex items-center gap-2"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  ხშირად დასმული კითხვები
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent 
+                value="new-ticket"
+                className="border rounded-lg p-6 bg-card/50 shadow-sm"
+              >
+                <TicketForm />
+              </TabsContent>
+
+              <TabsContent 
+                value="faq"
+                className="border rounded-lg p-6 bg-card/50 shadow-sm"
+              >
+                <FAQ />
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </div>
-
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "იგზავნება..." : "გაგზავნა"}
-      </Button>
-    </form>
+    </div>
   );
-}
+};
+
+export default Index;
