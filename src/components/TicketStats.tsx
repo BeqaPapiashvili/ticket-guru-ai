@@ -9,6 +9,7 @@ import { BarChart, Bar, XAxis, YAxis } from "recharts";
 import { useEffect, useState } from "react";
 import { Ticket } from "./TicketList";
 import { CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface DailyStats {
   name: string;
@@ -31,55 +32,69 @@ export function TicketStats() {
   const [avgResolutionTime, setAvgResolutionTime] = useState("0");
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
 
-  useEffect(() => {
-    const calculateStats = () => {
-      const tickets: Ticket[] = JSON.parse(localStorage.getItem("tickets") || "[]");
-      
-      // აქტიური და გადაჭრილი ტიკეტების რაოდენობა
-      const active = tickets.filter(t => t.status !== "resolved" && t.status !== "closed").length;
-      const resolved = tickets.filter(t => t.status === "resolved" || t.status === "closed").length;
-      
-      // საშუალო გადაჭრის დრო
-      const resolvedTicketsWithTime = tickets.filter(t => (t.status === "resolved" || t.status === "closed") && t.completed_at);
-      let totalResolutionTime = 0;
-      
-      resolvedTicketsWithTime.forEach(ticket => {
+  const calculateStats = async () => {
+    // აქტიური და გადაჭრილი ტიკეტების რაოდენობა
+    const { data: activeData } = await supabase
+      .from('tickets')
+      .select('count', { count: 'exact' })
+      .not('status', 'in', ['resolved', 'closed']);
+
+    const { data: resolvedData } = await supabase
+      .from('tickets')
+      .select('count', { count: 'exact' })
+      .in('status', ['resolved', 'closed']);
+
+    setActiveTickets(activeData?.count || 0);
+    setResolvedTickets(resolvedData?.count || 0);
+
+    // საშუალო გადაჭრის დრო
+    const { data: resolvedTickets } = await supabase
+      .from('tickets')
+      .select('created_at, completed_at')
+      .in('status', ['resolved', 'closed'])
+      .not('completed_at', 'is', null);
+
+    if (resolvedTickets && resolvedTickets.length > 0) {
+      let totalTime = 0;
+      resolvedTickets.forEach(ticket => {
         const startTime = new Date(ticket.created_at).getTime();
         const endTime = new Date(ticket.completed_at!).getTime();
-        totalResolutionTime += endTime - startTime;
+        totalTime += endTime - startTime;
       });
-
-      const avgTime = resolvedTicketsWithTime.length > 0
-        ? (totalResolutionTime / resolvedTicketsWithTime.length) / (1000 * 60 * 60)
-        : 0;
-
-      // ბოლო 7 დღის სტატისტიკა
-      const last7Days = Array.from({length: 7}, (_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        return d;
-      }).reverse();
-
-      const dailyData = last7Days.map(date => {
-        const dayTickets = tickets.filter(t => {
-          const ticketDate = new Date(t.created_at);
-          return ticketDate.getDate() === date.getDate() &&
-                 ticketDate.getMonth() === date.getMonth() &&
-                 ticketDate.getFullYear() === date.getFullYear();
-        });
-
-        return {
-          name: weekDays[date.getDay().toString()],
-          tickets: dayTickets.length
-        };
-      });
-
-      setActiveTickets(active);
-      setResolvedTickets(resolved);
+      const avgTime = (totalTime / resolvedTickets.length) / (1000 * 60 * 60);
       setAvgResolutionTime(avgTime.toFixed(1));
-      setDailyStats(dailyData);
-    };
+    }
 
+    // ბოლო 7 დღის სტატისტიკა
+    const last7Days = Array.from({length: 7}, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d;
+    }).reverse();
+
+    const dailyData = await Promise.all(last7Days.map(async (date) => {
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const { data: dayTickets } = await supabase
+        .from('tickets')
+        .select('count', { count: 'exact' })
+        .gte('created_at', startOfDay.toISOString())
+        .lte('created_at', endOfDay.toISOString());
+
+      return {
+        name: weekDays[date.getDay().toString()],
+        tickets: dayTickets?.count || 0
+      };
+    }));
+
+    setDailyStats(dailyData);
+  };
+
+  useEffect(() => {
     calculateStats();
     const interval = setInterval(calculateStats, 30000);
     return () => clearInterval(interval);

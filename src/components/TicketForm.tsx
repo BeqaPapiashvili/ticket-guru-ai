@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Send, Network, Monitor, HardDrive, Key } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const categories = [
   { id: "network", label: "ქსელური პრობლემა", icon: Network },
@@ -53,9 +54,11 @@ export function TicketForm() {
         created_at: new Date().toISOString(),
       };
       
-      const existingTickets = JSON.parse(localStorage.getItem("tickets") || "[]");
-      const updatedTickets = [...existingTickets, newTicket];
-      localStorage.setItem("tickets", JSON.stringify(updatedTickets));
+      const { error } = await supabase
+        .from('tickets')
+        .insert([newTicket]);
+
+      if (error) throw error;
       
       toast({
         title: "ტიკეტი წარმატებით გაიგზავნა",
@@ -70,6 +73,7 @@ export function TicketForm() {
         phone: "",
       });
     } catch (error) {
+      console.error('Error inserting ticket:', error);
       toast({
         title: "შეცდომა",
         description: "გთხოვთ სცადოთ მოგვიანებით",
@@ -168,4 +172,4 @@ export function TicketForm() {
       </Button>
     </form>
   );
-}
+};
