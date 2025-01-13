@@ -3,7 +3,7 @@ import { TicketList } from "@/components/TicketList";
 import { TicketStats } from "@/components/TicketStats";
 import { TicketFilters } from "@/components/TicketFilters";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Ticket, BarChart3, Clock, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Ticket } from "lucide-react";
 
 export default function Dashboard() {
   const [filters, setFilters] = useState({
@@ -16,6 +16,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="container mx-auto p-4 space-y-8">
+        {/* Header */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Ticket className="h-8 w-8 text-primary" />
@@ -26,32 +27,13 @@ export default function Dashboard() {
           <ThemeToggle />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-card hover:bg-card/80 transition-colors rounded-xl shadow-lg p-6 border flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <AlertCircle className="h-6 w-6 text-primary" />
-            </div>
-            <TicketStats />
-          </div>
-          <div className="bg-card hover:bg-card/80 transition-colors rounded-xl shadow-lg p-6 border flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <CheckCircle2 className="h-6 w-6 text-primary" />
-            </div>
-            <TicketStats />
-          </div>
-          <div className="bg-card hover:bg-card/80 transition-colors rounded-xl shadow-lg p-6 border flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Clock className="h-6 w-6 text-primary" />
-            </div>
-            <TicketStats />
-          </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <TicketStats />
         </div>
 
-        <div className="bg-card rounded-xl shadow-lg border p-6 transition-colors space-y-6">
-          <div className="flex items-center gap-3 mb-6">
-            <BarChart3 className="h-6 w-6 text-primary" />
-            <h2 className="text-xl font-semibold">ტიკეტების სია</h2>
-          </div>
+        {/* Filters and Ticket List */}
+        <div className="bg-card rounded-xl shadow-lg border p-6 space-y-6">
           <TicketFilters filters={filters} setFilters={setFilters} />
           <TicketList filters={filters} />
         </div>
