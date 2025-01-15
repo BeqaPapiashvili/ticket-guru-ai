@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase";
 
 export interface Ticket {
   id: string;
@@ -49,55 +48,67 @@ const priorityColors: { [key: string]: string } = {
 export function TicketList({ filters }: TicketListProps) {
   const [tickets, setTickets] = useState<Ticket[]>([]);
 
-  const fetchTickets = async () => {
-    let query = supabase
-      .from('tickets')
-      .select('*');
-
-    if (filters.status) {
-      query = query.eq('status', filters.status);
-    }
-    if (filters.category) {
-      query = query.eq('category', filters.category);
-    }
-    if (filters.priority) {
-      query = query.eq('priority', filters.priority);
-    }
-    if (filters.search) {
-      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,user.ilike.%${filters.search}%`);
-    }
-
-    const { data, error } = await query.order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching tickets:', error);
-      return;
-    }
-
-    setTickets(data || []);
-  };
-
   useEffect(() => {
-    fetchTickets();
-    const interval = setInterval(fetchTickets, 5000);
+    const loadTickets = () => {
+      const storedTickets = JSON.parse(localStorage.getItem("tickets") || "[]");
+      let filteredTickets = [...storedTickets];
+
+      if (filters.status) {
+        filteredTickets = filteredTickets.filter(
+          (ticket) => ticket.status === filters.status
+        );
+      }
+
+      if (filters.category) {
+        filteredTickets = filteredTickets.filter(
+          (ticket) => ticket.category === filters.category
+        );
+      }
+
+      if (filters.priority) {
+        filteredTickets = filteredTickets.filter(
+          (ticket) => ticket.priority === filters.priority
+        );
+      }
+
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        filteredTickets = filteredTickets.filter(
+          (ticket) =>
+            ticket.title.toLowerCase().includes(searchLower) ||
+            ticket.description.toLowerCase().includes(searchLower) ||
+            ticket.user.toLowerCase().includes(searchLower)
+        );
+      }
+
+      // Sort tickets by creation date (newest first)
+      filteredTickets.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setTickets(filteredTickets as Ticket[]);
+    };
+
+    loadTickets();
+    const interval = setInterval(loadTickets, 5000);
     return () => clearInterval(interval);
   }, [filters]);
 
-  const handleStatusChange = async (ticketId: string) => {
-    const { error } = await supabase
-      .from('tickets')
-      .update({ 
-        status: 'resolved',
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', ticketId);
+  const handleStatusChange = (ticketId: string) => {
+    const updatedTickets = tickets.map((ticket) => {
+      if (ticket.id === ticketId) {
+        const updatedTicket: Ticket = {
+          ...ticket,
+          status: "resolved" as const,
+          completed_at: new Date().toISOString(),
+        };
+        return updatedTicket;
+      }
+      return ticket;
+    });
 
-    if (error) {
-      console.error('Error updating ticket:', error);
-      return;
-    }
-
-    fetchTickets();
+    localStorage.setItem("tickets", JSON.stringify(updatedTickets));
+    setTickets(updatedTickets);
   };
 
   return (
